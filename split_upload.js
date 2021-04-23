@@ -6,15 +6,31 @@ class SplitUpload {
     file = null;
 
     // 1 Mb = 1000000
-    chunkSize = 1000000;
-    numberOfChunks = 0;
+    chunkSize = 10000;
+    numberOfChunk = 0;
+    chunkCounter= 0;
     originFileName = null;
     ext = null;
     newFileName = null;
 
+    // Callback
+    cbFileSize = null;
+    cbFilePart = null;
+    cbPartUpload = null;
+    cbPartUploadPercent = null;
+    cbTotalUpload = null;
+    cbStatus = null;
+
     constructor(args) {
         if(args?.createFileURL) this.setCreateFileURL(args.createFileURL);
         if(args?.uploadChunkURL) this.setUploadChunkURL(args.uploadChunkURL);
+
+        if(args?.cbFileSize) this.cbFileSize = args.cbFileSize;
+        if(args?.cbFilePart) this.cbFilePart = args.cbFilePart;
+        if(args?.cbPartUpload) this.cbPartUpload = args.cbPartUpload;
+        if(args?.cbPartUploadPercent) this.cbPartUploadPercent = args.cbPartUploadPercent;
+        if(args?.cbTotalUpload) this.cbTotalUpload = args.cbTotalUpload;
+        if(args?.cbStatus) this.cbStatus = args.cbStatus;
     }
 
     setCreateFileURL(url) {
@@ -43,6 +59,7 @@ class SplitUpload {
             }
             
             request.onerror = () => {
+                this.updateStatus('Gagal membuat file!')
                 reject(false);
             };    
 
@@ -54,15 +71,31 @@ class SplitUpload {
         return new Promise((resolve, reject) => {
             let request = new XMLHttpRequest();
 
+            const updateProgress = (oEvent) => {
+                if(oEvent.lengthComputable) {
+                    let percentComplete = Math.round(oEvent.loaded / oEvent.total * 100);
+                    
+                    let totalPercentComplete = Math.round((this.chunkCounter -1)/this.numberOfChunk*100 + percentComplete/this.numberOfChunk);
+                    if(this.cbPartUploadPercent) this.cbPartUploadPercent(percentComplete);
+                    if(this.cbTotalUpload) this.cbTotalUpload(totalPercentComplete);
+                }
+            }
+
+            request.upload.addEventListener('progress', updateProgress);
+
             request.open('POST', this.uploadChunkURL, true);
 
             request.onload = (event) => {
                 const response = JSON.parse(request.response);
-                if(response?.status !== 'ok') return reject(false);
+                if(response?.status !== 'ok') {
+                    this.updateStatus('Gagal upload bagian!')
+                    return reject(false);
+                }
                 return resolve(true);
             }
             
             request.onerror = () => {
+                this.updateStatus('Gagal mengupload bagian!')
                 reject(false);
             };    
 
@@ -83,20 +116,31 @@ class SplitUpload {
         });
     }
 
+    updateStatus(status) {
+        if(this.cbStatus) this.cbStatus(status);
+    }
+
     async upload(file) {
         this.file = file;
 
         this.originFileName = this.file.name;
         this.ext = this.originFileName.split('.').pop();
-
+        if(this.cbFileSize) this.cbFileSize(this.file.size);
+        
+        this.updateStatus('Membuat file...');
         await this.createFile();
 
-        this.numberOfChunks = Math.ceil(this.file.size / this.chunkSize);
+        this.numberOfChunk = Math.ceil(this.file.size / this.chunkSize);
+
+        if(this.cbFilePart) this.cbFilePart(this.numberOfChunk);
+
         let start = 0;
 
-        for(let i=0; i < this.numberOfChunks; i++) {
-            console.log('Mulai upload chunk ke:', i);
+        this.updateStatus('Mengupload bagian...');
 
+        for(let i=0; i < this.numberOfChunk; i++) {
+            this.chunkCounter++;
+            if(this.cbPartUpload) this.cbPartUpload(i+1);
             let chunkEnd = Math.min(start + this.chunkSize, this.file.size);
 
             const chunk = this.file.slice(start, chunkEnd);
@@ -106,12 +150,12 @@ class SplitUpload {
             chunkForm.append('data', chunkEncode);
             chunkForm.append('file', this.newFileName);
             
-            console.log('form:', chunkForm);
-            const result = await this.uploadChunk(chunkForm);
-            console.log('Upload Chunk: ', result);
+            await this.uploadChunk(chunkForm);
 
             start += this.chunkSize;
         }
+
+        this.updateStatus('Berhasil mengupload!');
 
         return 'ok';
     }

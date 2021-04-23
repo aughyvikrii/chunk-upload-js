@@ -7,22 +7,58 @@
     <title>Split Upload</title>
 </head>
 <body>
-    <input type="file" onchange="inputChange(event)">
+    <p>
+        <b>File Size: </b> <span id="fileSize">0 Kb</span> <br>
+        <b>File Part: </b> <span id="filePart">0</span><br>
+        <b>Part Upload: </b> <span id="partUpload">0</span> sudah <span id="partUploadPercent">0%</span> <br>
+        <b>Total Upload: </b> <span id="totalUpload">0%</span> <br>
+        <b>Status:</b> <span id="uploadStatus">menunggu upload</span>
+    </p>
+    <input type="file" id="file"> <br> <br>
+    <button onclick="uploadFile()">Upload File</button>
     <script src="split_upload.js"></script>
     <script>
-        const inputChange = async (e) => {
-            let input = e.target,
+
+        const cbFileSize = (size) => {
+            document.getElementById('fileSize').innerHTML = Math.ceil(size / 10000) + '  Kb';
+        }
+
+        const cbFilePart = (totalPart) => {
+            document.getElementById('filePart').innerHTML = totalPart;
+        }
+
+        const cbPartUpload = (partUpload) => {
+            document.getElementById('partUpload').innerHTML = partUpload;
+        }
+
+        const cbPartUploadPercent = (partUploadPercent) => {
+            document.getElementById('partUploadPercent').innerHTML = partUploadPercent + ' %';
+        }
+
+        const cbTotalUpload = (totalPercentUpload) => {
+            document.getElementById('totalUpload').innerHTML = totalPercentUpload + ' %'
+        }
+
+        const cbStatus = (status) => {
+            document.getElementById('uploadStatus').innerHTML = status;
+        }
+
+        const uploadFile = async () => {
+            let input = document.getElementById('file'),
                 file = input.files[0];
 
             let splitUpload = new SplitUpload({
                 createFileURL: 'create_file.php',
-                uploadChunkURL: 'upload_chunk.php'
+                uploadChunkURL: 'upload_chunk.php',
+                cbFileSize: cbFileSize,
+                cbFilePart: cbFilePart,
+                cbPartUpload: cbPartUpload,
+                cbPartUploadPercent: cbPartUploadPercent,
+                cbTotalUpload: cbTotalUpload,
+                cbStatus: cbStatus
             });
 
             const uploadResult = await splitUpload.upload(file);
-
-            console.log('uploadResult:', uploadResult);
-            console.log('splitUploadClass:', splitUpload);
         }
     </script>
 </body>

@@ -1,5 +1,4 @@
 <?php
-
 function _print($data) {
     print '<pre>';
     print_r($data);
