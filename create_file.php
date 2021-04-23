@@ -11,7 +11,7 @@ $ext = @$_POST['ext'];
 $fileName = md5(uniqid().time().rand(000000, 999999));
 $fullFileName = "$fileName.{$ext}";
 
-$create = touch(__DIR__ . "/image/{$fullFileName}");
+$create = touch(__DIR__ . "/file/{$fullFileName}");
 
 if($create) {
     echo json_encode([

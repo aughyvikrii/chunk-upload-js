@@ -26,7 +26,7 @@ $chunk = @$_POST['data'];
 
 $data = decode_chunk($chunk);
 
-$append = file_put_contents(__DIR__."/image/{$fileName}", $data, FILE_APPEND);
+$append = file_put_contents(__DIR__."/file/{$fileName}", $data, FILE_APPEND);
 
 if($append) {
     echo json_encode([ 'status' => 'ok' ]);
