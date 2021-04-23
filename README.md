@@ -1,7 +1,13 @@
 # chunk-upload-js
 
-Class upload file menggunakan javascript
+Digunakan untuk menghandle upload file berukuran besar, agar lebih informatif kepada user sudah sampai mana proses upload berlangsung.
 
-upload akan dibagi menjadi beberapa bagian urut sesuai dengan setting maksimal ukuran per bagian.
+Yang dibutuhkan:
+  1. API untuk membuat file kosong
+  2. API untuk mengupload bagian ke file kosong tadi
 
-setting ukuran maksimal bagian ada di class dengan variable "chunkSize"
+Cara Kerja:
+
+  1. Membuat file kosong ( API create_file )
+  2. Membagi file yang akan diupload menjadi beberapa bagian
+  3. Mengupload bagian perbagian ( API upload_chunk )
