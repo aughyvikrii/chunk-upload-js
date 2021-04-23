@@ -13,6 +13,8 @@
         <b>Part Upload: </b> <span id="partUpload">0</span> sudah <span id="partUploadPercent">0%</span> <br>
         <b>Total Upload: </b> <span id="totalUpload">0%</span> <br>
         <b>Status:</b> <span id="uploadStatus">menunggu upload</span>
+
+        <h3 id="fileLocation"></h3>
     </p>
     <input type="file" id="file"> <br> <br>
     <button onclick="uploadFile()">Upload File</button>
@@ -20,7 +22,12 @@
     <script>
 
         const cbFileSize = (size) => {
-            document.getElementById('fileSize').innerHTML = Math.ceil(size / 10000) + '  Kb';
+            if(size > 1000000) {
+                size = Math.ceil(size / 1000000) + '  Mb';
+            } else {
+                size = Math.ceil(size / 1000) + '  Kb';
+            }
+            document.getElementById('fileSize').innerHTML = size;
         }
 
         const cbFilePart = (totalPart) => {
@@ -50,6 +57,9 @@
             let splitUpload = new SplitUpload({
                 createFileURL: 'create_file.php',
                 uploadChunkURL: 'upload_chunk.php',
+                chunkSize: 10000, // 1Mb
+
+                // Callback
                 cbFileSize: cbFileSize,
                 cbFilePart: cbFilePart,
                 cbPartUpload: cbPartUpload,
@@ -59,6 +69,8 @@
             });
 
             const uploadResult = await splitUpload.upload(file);
+
+            document.getElementById('fileLocation').innerHTML = `<a target="__blank" href="file/${uploadResult}">Klik untuk melihat file</a>`
         }
     </script>
 </body>

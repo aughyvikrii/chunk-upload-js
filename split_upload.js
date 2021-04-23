@@ -6,7 +6,7 @@ class SplitUpload {
     file = null;
 
     // 1 Mb = 1000000
-    chunkSize = 10000;
+    chunkSize = 1000000;
     numberOfChunk = 0;
     chunkCounter= 0;
     originFileName = null;
@@ -31,6 +31,7 @@ class SplitUpload {
         if(args?.cbPartUploadPercent) this.cbPartUploadPercent = args.cbPartUploadPercent;
         if(args?.cbTotalUpload) this.cbTotalUpload = args.cbTotalUpload;
         if(args?.cbStatus) this.cbStatus = args.cbStatus;
+        if(args?.chunkSize) this.chunkSize = args.chunkSize;
     }
 
     setCreateFileURL(url) {
@@ -157,6 +158,6 @@ class SplitUpload {
 
         this.updateStatus('Berhasil mengupload!');
 
-        return 'ok';
+        return this.newFileName;
     }
 }
