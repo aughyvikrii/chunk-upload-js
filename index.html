@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Split Upload</title>
+</head>
+<body>
+    <input type="file" onchange="inputChange(event)">
+    <script src="split_upload.js"></script>
+    <script>
+        const inputChange = async (e) => {
+            let input = e.target,
+                file = input.files[0];
+
+            let splitUpload = new SplitUpload({
+                createFileURL: 'create_file.php',
+                uploadChunkURL: 'upload_chunk.php'
+            });
+
+            const uploadResult = await splitUpload.upload(file);
+
+            console.log('uploadResult:', uploadResult);
+            console.log('splitUploadClass:', splitUpload);
+        }
+    </script>
+</body>
+</html>
